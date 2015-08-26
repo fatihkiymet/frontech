@@ -2,44 +2,78 @@
 
 var cmonApp = angular.module('cmonApp', ['ngRoute']);
 
-cmonApp.controller('LoginController', function($scope, $route, $routeParams, $location) {
-     $scope.$route = $route;
-     $scope.$location = $location;
-     $scope.$routeParams = $routeParams;
+cmonApp
+.controller('MainController', function($scope, $rootScope, $location){
+	$rootScope.IsAuthenticated = false;
 
-     $scope.login = function(){
+    $scope.logout = function(){
+    	var result = $.ajax({
+		    url: '/logout',
+		    data : { 
+		    	username : $rootScope.AuthenticatedUser.username
+		    }
+    	});
+
+    	result.success(function(response){   
+    		if(response.status === 'success')
+    		{
+  				$rootScope.IsAuthenticated = false;
+  				$rootScope.AuthenticatedUser = null;
+  				$location.path('/Login');
+  				$rootScope.$apply();
+    		} 		
+    	});
+    };
+})
+.controller('LoginController', function($scope, $rootScope, $location) {     
+    $scope.login = function(){
         if($scope.loginform.$valid)
         {            
-			var result = $.ajax({
-			    url: '/login',
-			    type : 'POST',
-			    data: {
-			        username: $scope.username,
-			        password: $scope.password
-			    }
-			});
+    			var result = $.ajax({
+    			    url: '/login',
+    			    type : 'POST',
+    			    data: {
+    			        username: 'rebecka',// $scope.username,
+    			        password: 'secret'//$scope.password
+    			    }
+    			});
 
-			result.success(function(){
-				$scope.$root.loggedInUser = $scope.username;
-				$scope.$location.path('/Games');
-				$scope.$apply();
-			});
+    			result.success(function(response){
+    				if(response.status === "success")
+    				{
+    					$rootScope.AuthenticatedUser = response.player;
+    					$rootScope.AuthenticatedUser.username = 'rebecka';//$scope.username;
+    					$rootScope.IsAuthenticated = true;
+    					$location.path('/Games');
+    					$rootScope.$apply();					
+    				}
+    				else{					
+    					alert(response.error);
+    				}
+    			});
         }    
         else
         {
         	$scope.loginform.$setDirty();
         } 
-     };
+    };
  })
- .controller('GamesController', function($scope, $routeParams, $route, $location) {
+ .controller('GamesController', function($scope, $routeParams, $route) {
     $scope.name = "GamesController";
     $scope.params = $routeParams;
-    debugger
- 	$scope.categories = $route.current.locals.categories;
+    $scope.games = $route.current.locals.games;
+ 	  $scope.categories = $route.current.locals.categories;
+    $scope.categoryId = 0; 
+    $scope.setCategory = function(id){
+      $scope.categoryId = id; 
+    };
+    $scope.categoryFilter = function(cat){
+      return cat.categoryIds.indexOf($scope.categoryId) > -1;
+    };
  })
  .controller('PlayController', function($scope, $routeParams) {
-     $scope.name = "PlayController";
-     $scope.params = $routeParams;
+    $scope.name = "PlayController";
+    $scope.params = $routeParams;
  });
 
 cmonApp.config(function($routeProvider) {
@@ -47,12 +81,17 @@ cmonApp.config(function($routeProvider) {
 	.when('/Login', {
     	templateUrl: 'login.html',
     	controller: 'LoginController'
-  	})
+	  })
   	.when('/Games', {
   		resolve : {  			
   			categories : function(){
   				return $.ajax({
   					url : '/categories'
+  				});
+  			},
+  			games : function(){
+  				return $.ajax({
+  					url : '/games'
   				});
   			} 
   		},
@@ -74,11 +113,11 @@ cmonApp.config(function($routeProvider) {
         redirectTo: '/Games'
   	});     	
 }).run(['$rootScope', '$location', function ($rootScope, $location) {
-    $rootScope.$on('$routeChangeStart', function (event) {
-    	if(!$rootScope.loggedInUser)
-		{
-			$location.path('/Login');
-		}
+    $rootScope.$on('$routeChangeStart', function () {
+    	if(!$rootScope.IsAuthenticated)
+  		{
+	 		  $location.path('/Login');
+	 	  }
     });
 }]);
 

@@ -17,7 +17,7 @@
 
 
 </head>
-<body ng-app="cmonApp">
+<body ng-app="cmonApp" ng-controller="MainController">
 
     <script type="text/ng-template" id="login.html">
         <div class="login">
@@ -55,23 +55,23 @@
 
                         <!-- player item template -->
                         <div class="player item">
-                            <img class="ui avatar image" src="" alt="avatar">
+                            <img class="ui avatar image" ng-src="{{AuthenticatedUser.avatar}}" alt="avatar">
 
                             <div class="content">
-                                <div class="header"><b class="name"></b></div>
-                                <div class="description event"></div>
+                                <div class="header"><b class="name">{{AuthenticatedUser.name}}</b></div>
+                                <div class="description event">{{AuthenticatedUser.event}}</div>
                             </div>
                         </div>
                         <!-- end player item template -->
 
                     </div>
-                    <div class="logout ui left floated secondary button inverted">
+                    <div class="logout ui left floated secondary button inverted" ng-click="logout()">
                         <i class="left chevron icon"></i>Log Out
                     </div>
                 </div>
                 <div class="four wide column">
                     <div class="search ui small icon input ">
-                        <input type="text" placeholder="Search Game">
+                        <input type="text" ng-model="searchText" placeholder="Search Game">
                         <i class="search icon"></i>
                     </div>
                 </div>
@@ -83,20 +83,19 @@
                     <div class="ui relaxed divided game items links">
 
                         <!-- game item template -->
-                        <div class="game item">
+                        <div class="game item" ng-repeat="game in games | filter:categoryFilter | filter:searchText">
                             <div class="ui small image">
-                                <img src="" alt="game-icon">
+                                <img ng-src="{{game.icon}}" alt="game-icon">
                             </div>
                             <div class="content">
-                                <div class="header"><b class="name"></b></div>
-                                <div class="description">
+                                <div class="header"><b class="name">{{game.name}}</b></div>
+                                <div class="description">{{game.description}}
                                 </div>
                                 <div class="extra">
                                     <div class="play ui right floated secondary button inverted">
                                         Play
                                         <i class="right chevron icon"></i>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -110,7 +109,7 @@
                     <div class="ui selection animated list category items">
 
                         <!-- category item template -->
-                        <div class="category item" ng-repeat="cat in categories">
+                        <div class="category item" ng-repeat="cat in categories" ng-click="setCategory(cat.id)">
                             <div class="content">
                                 <div class="header">{{cat.name}}</div>
                             </div>
