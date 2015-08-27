@@ -4,7 +4,8 @@ var cmonApp = angular.module('cmonApp', ['ngRoute']);
 
 cmonApp
 .controller('MainController', function($scope, $rootScope, $location){
-	$rootScope.IsAuthenticated = false;
+  
+  	$rootScope.IsAuthenticated = false;
 
     $scope.logout = function(){
     	var result = $.ajax({
@@ -33,8 +34,8 @@ cmonApp
     			    url: '/login',
     			    type : 'POST',
     			    data: {
-    			        username: 'rebecka',// $scope.username,
-    			        password: 'secret'//$scope.password
+    			        username: $scope.username,
+    			        password: $scope.password
     			    }
     			});
 
@@ -42,7 +43,7 @@ cmonApp
     				if(response.status === "success")
     				{
     					$rootScope.AuthenticatedUser = response.player;
-    					$rootScope.AuthenticatedUser.username = 'rebecka';//$scope.username;
+    					$rootScope.AuthenticatedUser.username = $scope.username;
     					$rootScope.IsAuthenticated = true;
     					$location.path('/Games');
     					$rootScope.$apply();					
@@ -77,13 +78,16 @@ cmonApp
         $location.path('/Play/' + code);
     };
  })
- .controller('PlayController', function($scope, $routeParams) {
+ .controller('PlayController', function($scope, $location, $routeParams) {
 
     $scope.name = "PlayController";
     $scope.params = $routeParams;
+    $scope.goBack = function(){
+        $location.path('/Games');
+    };
 
-    $scope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute) {
-          debugger
+    $scope.$on("$routeChangeSuccess", function($currentRoute) {
+        comeon.game.launch($currentRoute.currentScope.params.code);
     });
  });
 

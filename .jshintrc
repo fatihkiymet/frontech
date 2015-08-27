@@ -31,6 +31,7 @@
   "globals": {
     "document" : false,
     "$" : false,
-    "angular" : false
+    "angular" : false,
+    "comeon" : false
   }
 }
