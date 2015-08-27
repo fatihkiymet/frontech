@@ -58,22 +58,33 @@ cmonApp
         } 
     };
  })
- .controller('GamesController', function($scope, $routeParams, $route) {
+ .controller('GamesController', function($scope, $routeParams, $route, $location) {
     $scope.name = "GamesController";
     $scope.params = $routeParams;
     $scope.games = $route.current.locals.games;
  	  $scope.categories = $route.current.locals.categories;
     $scope.categoryId = 0; 
+
     $scope.setCategory = function(id){
       $scope.categoryId = id; 
     };
+
     $scope.categoryFilter = function(cat){
       return cat.categoryIds.indexOf($scope.categoryId) > -1;
     };
+
+    $scope.play = function(code) {
+        $location.path('/Play/' + code);
+    };
  })
  .controller('PlayController', function($scope, $routeParams) {
+
     $scope.name = "PlayController";
     $scope.params = $routeParams;
+
+    $scope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute) {
+          debugger
+    });
  });
 
 cmonApp.config(function($routeProvider) {
@@ -98,20 +109,20 @@ cmonApp.config(function($routeProvider) {
     	templateUrl: 'games.html',
     	controller: 'GamesController'
   	})
-   	.when('/Game/:gameId', {
-    	templateUrl: 'play.html',
-    	controller: 'PlayController',
-    	resolve: {
+   	.when('/Play/:code', {
+        templateUrl: 'play.html',
+        controller: 'PlayController',
+        resolve: {
       		delay: function($q, $timeout) {
 	        	var delay = $q.defer();
 	        	$timeout(delay.resolve, 1000);
 	        	return delay.promise;
-      		}
-		}
+  		    }
+		    }
 	})	
-  	.otherwise({
-        redirectTo: '/Games'
-  	});     	
+	.otherwise({
+      redirectTo: '/Games'
+	});     	
 }).run(['$rootScope', '$location', function ($rootScope, $location) {
     $rootScope.$on('$routeChangeStart', function () {
     	if(!$rootScope.IsAuthenticated)
